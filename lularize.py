@@ -1,0 +1,103 @@
+import sys
+import os
+from PIL import Image, ImageFont, ImageDraw
+import random
+
+#print 'Number of arguments:', len(sys.argv)
+
+colors = [
+    (254, 209, 65),
+    (255, 157, 110),
+    (246, 117, 153),
+    (221, 127, 211),
+    (149, 149, 210),
+    (139, 184, 232),
+    (100, 204, 201),
+    (136, 139, 141)]
+color = colors[random.randrange(0, len(colors) - 1)]
+
+photo_increment = 1
+
+styleData = {
+    'joy': {'price': 60, 'sizes': ['xs', 's', 'm', 'l', 'xl']},
+    'tween': {'price': 23},
+    'tall_&_curvy': {'price': 25},
+    'kids_s/m': {'price': 23},
+    'sloan': {'price': 28, 'sizes': [2, 4, 6, 8, 10, 12, 14]},
+    'sarah': {'price': 70, 'sizes': ['xs', 's', 'm', 'l', 'xl']},
+    'randy': {'price': 35, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'perfect_t': {'price': 36, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'patrick': {'price': 40, 'sizes': ['m', 'l', 'xl', '2xl', '3xl']},
+    'one_size': {'price': 25},
+    'nicole': {'price': 48, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'monroe': {'price': 48, 'sizes': ['s', 'l']},
+    'maxi': {'price': 42, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'madison': {'price': 48, 'sizes': ['xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'kids_l/xl': {'price': 23},
+    'lucy': {'price': 52, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl']},
+    'lola': {'price': 48, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl']},
+    'lindsay': {'price': 48, 'sizes': ['s', 'm', 'l']},
+    'kids_azure': {'price': 25, 'sizes': [2, 4, 6, 8, 10, 12, 14]},
+    'julia': {'price': 45, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'jordan': {'price': 65, 'sizes': ['xs', 's', 'm', 'l', 'xl', '2xl']},
+    'jill': {'price': 55, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl']},
+    'jade': {'price': 55, 'sizes': ['xs', 's', 'm', 'l', 'xl', '2xl']},
+    'irma': {'price': 35, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'gracie': {'price': 28, 'sizes': [2, 4, 6, 8, 10, 12, 14]},
+    'dotdotsmile': {'price': 36, 'sizes': [2, '3/4', '5/6', 7, '8/10', '12/14']},
+    'classic_t': {'price': 35, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'cassie': {'price': 35, 'sizes': ['xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'azure': {'price': 35, 'sizes': ['xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'ana': {'price': 60, 'sizes': ['xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'amelia': {'price': 65, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl']}
+}
+
+def formatStyle(styleType):
+    styleType = styleType.replace('_', ' ')
+    return styleType.upper()
+
+def centerText(msg):
+    w, h = draw.textsize(msg, font=font)
+    return 612 + (306 - w) / 2
+
+def filePath(style, size, i):
+    return style + "_" + size + "_" + str(i) + '.jpg'
+
+style = sys.argv[1]
+size = sys.argv[2]
+folder = sys.argv[3] + '/'
+
+print(len(os.listdir(folder)))
+
+for fn in os.listdir(folder):
+    if os.path.isfile(folder + fn) and os.path.splitext(fn)[1] == '.jpg':
+        print(fn)
+
+        img = Image.open(folder + fn)
+
+        img.thumbnail((612, 816))
+        newImage = Image.new("RGBA", size=(918, 816), color=(255,255,255))
+        newImage.paste(img, (0, 0, 612, 816))
+        draw = ImageDraw.Draw(newImage)
+
+        font = ImageFont.truetype("MavenProLight-300.otf", 42)
+        draw.text((30, 760), "LuLaRoe Stacy Leasure-Broski", (0, 0, 0), font=font)
+        draw.text((28, 758), "LuLaRoe Stacy Leasure-Broski", color, font=font)
+
+        # Style
+        draw.rectangle([(612, 0), (918, 130)], fill=color)
+        msg = formatStyle(style)
+        font = ImageFont.truetype("steelfish rg.ttf", 90)
+        draw.text((centerText(msg), 10), msg, (255, 255, 255), font=font)
+
+        # Size
+        draw.text((centerText(size), 150), size, color, font=font)
+
+        # Price
+        font = ImageFont.truetype("steelfish rg.ttf", 120)
+        msg = "$" + str(styleData[style]['price'])
+        draw.text((centerText(msg), 260), msg, color, font=font)
+
+        # Save image
+        newImage.save(folder + filePath(style, size, photo_increment))
+        photo_increment += 1
