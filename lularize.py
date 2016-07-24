@@ -3,8 +3,6 @@ import os
 from PIL import Image, ImageFont, ImageDraw
 import random
 
-#print 'Number of arguments:', len(sys.argv)
-
 colors = [
     (254, 209, 65),
     (255, 157, 110),
@@ -15,8 +13,6 @@ colors = [
     (100, 204, 201),
     (136, 139, 141)]
 color = colors[random.randrange(0, len(colors) - 1)]
-
-photo_increment = 1
 
 styleData = {
     'joy': {'price': 60, 'sizes': ['xs', 's', 'm', 'l', 'xl']},
@@ -56,48 +52,63 @@ def formatStyle(styleType):
     styleType = styleType.replace('_', ' ')
     return styleType.upper()
 
-def centerText(msg):
-    w, h = draw.textsize(msg, font=font)
-    return 612 + (306 - w) / 2
+def centerText(dim):
+    return 612 + (306 - dim[0]) / 2
 
 def filePath(style, size, i):
     return style + "_" + size + "_" + str(i) + '.jpg'
 
-style = sys.argv[1]
-size = sys.argv[2]
-folder = sys.argv[3] + '/'
+folder = sys.argv[1] + '/'
 
-print(len(os.listdir(folder)))
+print('Lularizing: ' + folder)
+logo = Image.open('logo.jpg')
 
-for fn in os.listdir(folder):
-    if os.path.isfile(folder + fn) and os.path.splitext(fn)[1] == '.jpg':
-        print(fn)
+def processImage(file, style, size, folder):
+    photo_increment = 1
+    img = Image.open(file)
 
-        img = Image.open(folder + fn)
+    img.thumbnail((612, 816))
+    newImage = Image.new("RGBA", size=(918, 816), color=(255,255,255))
+    newImage.paste(img, (0, 0, 612, 816))
+    newImage.paste(logo, (624, 520, 909, 805))
+    draw = ImageDraw.Draw(newImage)
 
-        img.thumbnail((612, 816))
-        newImage = Image.new("RGBA", size=(918, 816), color=(255,255,255))
-        newImage.paste(img, (0, 0, 612, 816))
-        draw = ImageDraw.Draw(newImage)
+    font = ImageFont.truetype("MavenProLight-300.otf", 42)
+    draw.text((32, 760), "LuLaRoe Stacy Leasure-Broski", (0, 0, 0), font=font)
+    draw.text((30, 758), "LuLaRoe Stacy Leasure-Broski", color, font=font)
 
-        font = ImageFont.truetype("MavenProLight-300.otf", 42)
-        draw.text((30, 760), "LuLaRoe Stacy Leasure-Broski", (0, 0, 0), font=font)
-        draw.text((28, 758), "LuLaRoe Stacy Leasure-Broski", color, font=font)
+    # Style
+    draw.rectangle([(612, 0), (918, 130)], fill=color)
+    msg = formatStyle(style)
+    font = ImageFont.truetype("steelfish rg.ttf", 100)
+    draw.text((centerText(draw.textsize(msg, font=font)), 2), msg, (255, 255, 255), font=font)
 
-        # Style
-        draw.rectangle([(612, 0), (918, 130)], fill=color)
-        msg = formatStyle(style)
-        font = ImageFont.truetype("steelfish rg.ttf", 90)
-        draw.text((centerText(msg), 10), msg, (255, 255, 255), font=font)
+    # Size
+    draw.text((centerText(draw.textsize(size.upper(), font=font)), 150), size.upper(), color, font=font)
 
-        # Size
-        draw.text((centerText(size), 150), size, color, font=font)
+    # Price
+    font = ImageFont.truetype("steelfish rg.ttf", 100)
+    msg = "$" + str(styleData[style]['price'])
+    draw.text((centerText(draw.textsize(msg, font=font)), 275), msg, color, font=font)
 
-        # Price
-        font = ImageFont.truetype("steelfish rg.ttf", 120)
-        msg = "$" + str(styleData[style]['price'])
-        draw.text((centerText(msg), 260), msg, color, font=font)
-
-        # Save image
-        newImage.save(folder + filePath(style, size, photo_increment))
+    # Save image
+    while os.path.exists(folder + filePath(style, size, photo_increment)):
         photo_increment += 1
+
+    newImage.save(folder + filePath(style, size, photo_increment))
+    #os.remove(folder + file)
+
+def processFolder(folder, style, size):
+    print('processing ' + folder)
+    for fn in os.listdir(folder):
+        if os.path.isfile(folder + fn) and os.path.splitext(fn)[1] == '.jpg':
+            processImage(folder + fn, style, size, folder)
+        elif os.path.isdir(folder + fn):
+            if style == '':
+                style = fn
+            else:
+                size = fn
+
+            processFolder(folder + fn + '/', style, size)
+
+processFolder(folder, '', '')
