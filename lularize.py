@@ -14,6 +14,8 @@ colors = [
     (136, 139, 141)]
 color = colors[random.randrange(0, len(colors) - 1)]
 
+running_total = 0
+
 styleData = {
     'joy': {'price': 60, 'sizes': ['xs', 's', 'm', 'l', 'xl']},
     'tween': {'price': 23},
@@ -70,8 +72,6 @@ def isLularizedName(fn, style, size):
     return False
 
 folder = sys.argv[1] + '/'
-
-print('Lularizing: ' + folder)
 logo = Image.open('logo.jpg')
 
 def processImage(file, style, size, folder):
@@ -112,11 +112,12 @@ def processImage(file, style, size, folder):
 
     newImage.save(folder + filePath(style, size, photo_increment))
     os.remove(file)
+    running_total += 1
 
 def processFolder(folder, style, size):
-    print('processing ' + folder)
     for fn in os.listdir(folder):
         if os.path.isfile(folder + fn) and os.path.splitext(fn)[1] == '.jpg':
+            print('processing ' + folder)
             processImage(folder + fn, style, size, folder)
         elif os.path.isdir(folder + fn):
             if style == '':
@@ -126,4 +127,6 @@ def processFolder(folder, style, size):
 
             processFolder(folder + fn + '/', style, size)
 
+print('Lularizing folder: ' + folder)
 processFolder(folder, '', '')
+print('Lularized ' + str(running_total) + ' photos.')
