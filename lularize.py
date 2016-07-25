@@ -58,6 +58,17 @@ def centerText(dim):
 def filePath(style, size, i):
     return style + "_" + size + "_" + str(i) + '.jpg'
 
+def isLularizedName(fn, style, size):
+    fileName = os.path.basename(fn)
+
+    if len(fileName) < 1:
+        return False
+    if fileName.count('_') != 2:
+        return False
+    if fileName[:fileName.find('_')] == style:
+        return True
+    return False
+
 folder = sys.argv[1] + '/'
 
 print('Lularizing: ' + folder)
@@ -65,6 +76,10 @@ logo = Image.open('logo.jpg')
 
 def processImage(file, style, size, folder):
     photo_increment = 1
+
+    if isLularizedName(file, style, size):
+        return
+
     img = Image.open(file)
 
     img.thumbnail((612, 816))
