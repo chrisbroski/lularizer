@@ -12,9 +12,6 @@ colors = [
     (139, 184, 232),
     (100, 204, 201),
     (136, 139, 141)]
-color = colors[random.randrange(0, len(colors) - 1)]
-
-running_total = 0
 
 styleData = {
     'joy': {'price': 60, 'sizes': ['xs', 's', 'm', 'l', 'xl']},
@@ -50,6 +47,11 @@ styleData = {
     'amelia': {'price': 65, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl']}
 }
 
+color = colors[random.randrange(0, len(colors) - 1)]
+running_total = 0
+folder = sys.argv[1] + '/'
+logo = Image.open('logo.jpg')
+
 def formatStyle(styleType):
     styleType = styleType.replace('_', ' ')
     return styleType.upper()
@@ -70,9 +72,6 @@ def isLularizedName(fn, style, size):
     if fileName[:fileName.find('_')] == style:
         return True
     return False
-
-folder = sys.argv[1] + '/'
-logo = Image.open('logo.jpg')
 
 def processImage(file, style, size, folder):
     photo_increment = 1
@@ -127,6 +126,7 @@ def processFolder(folder, style, size):
 
             processFolder(folder + fn + '/', style, size)
 
-print('Lularizing folder: ' + folder)
-processFolder(folder, '', '')
-print('Lularized ' + str(running_total) + ' photos.')
+if __name__ == "__main__":
+    print('Lularizing folder: ' + folder)
+    processFolder(folder, '', '')
+    print('Lularized ' + str(running_total) + ' photos.')
