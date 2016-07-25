@@ -96,7 +96,7 @@ def processImage(file, style, size, folder):
         photo_increment += 1
 
     newImage.save(folder + filePath(style, size, photo_increment))
-    #os.remove(folder + file)
+    os.remove(file)
 
 def processFolder(folder, style, size):
     print('processing ' + folder)
