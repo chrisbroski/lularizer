@@ -47,6 +47,7 @@ styleData = {
     'amelia': {'price': 65, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl']}
 }
 
+# Globals
 color = colors[random.randrange(0, len(colors) - 1)]
 running_total = 0
 folder = sys.argv[1] + '/'
@@ -111,6 +112,7 @@ def processImage(file, style, size, folder):
 
     newImage.save(folder + filePath(style, size, photo_increment))
     os.remove(file)
+    global running_total
     running_total += 1
 
 def processFolder(folder, style, size):
