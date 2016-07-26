@@ -67,6 +67,7 @@ def filePath(style, size, i):
 
 def getStyleSize(fn):
     aPath = fn.split('/')
+    print(aPath)
     size = aPath[len(aPath) - 2]
     style = aPath[len(aPath) - 3]
     return [style, size]
@@ -76,9 +77,9 @@ def isLularizedName(fn, style, size):
 
     if len(fileName) < 1:
         return False
-    if fileName.count('_') != 2:
+    if fileName.count('_') < 2:
         return False
-    if fileName[:fileName.find('_')] == style:
+    if fileName[:fileName.rfind('_')] == style + '_' + size:
         return True
     return False
 
@@ -87,6 +88,8 @@ def processImage(file, folder):
     info = getStyleSize(file)
     style = info[0]
     size = info[1]
+
+    print(size)
 
     if isLularizedName(file, style, size):
         return
@@ -106,8 +109,8 @@ def processImage(file, folder):
     # Style
     draw.rectangle([(finalWidth, 0), (int(finalWidth * 1.5), 130)], fill=color)
     msg = formatStyle(style)
-    font = ImageFont.truetype("steelfish rg.ttf", 100)
-    draw.text((centerText(draw, msg, font), 2), msg, (255, 255, 255), font=font)
+    font = ImageFont.truetype("steelfish rg.ttf", 80)
+    draw.text((centerText(draw, msg, font), 15), msg, (255, 255, 255), font=font)
 
     # Size
     draw.text((centerText(draw, size.upper(), font), 150), size.upper(), color, font=font)
