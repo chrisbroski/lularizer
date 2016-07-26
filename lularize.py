@@ -52,16 +52,24 @@ color = colors[random.randrange(0, len(colors) - 1)]
 running_total = 0
 folder = sys.argv[1] + '/'
 logo = Image.open('logo.jpg')
+finalWidth = 612
 
 def formatStyle(styleType):
     styleType = styleType.replace('_', ' ')
     return styleType.upper()
 
-def centerText(dim):
-    return 612 + (306 - dim[0]) / 2
+def centerText(draw, msg, font):
+    w, h = draw.textsize(msg.upper(), font=font)
+    return finalWidth + ((finalWidth / 2) - w) / 2
 
 def filePath(style, size, i):
     return style + "_" + size + "_" + str(i) + '.jpg'
+
+def getStyleSize(fn):
+    aPath = fn.split('/')
+    size = aPath[len(aPath) - 2]
+    style = aPath[len(aPath) - 3]
+    return [style, size]
 
 def isLularizedName(fn, style, size):
     fileName = os.path.basename(fn)
@@ -74,17 +82,20 @@ def isLularizedName(fn, style, size):
         return True
     return False
 
-def processImage(file, style, size, folder):
+def processImage(file, folder):
     photo_increment = 1
+    info = getStyleSize(file)
+    style = info[0]
+    size = info[1]
 
     if isLularizedName(file, style, size):
         return
 
     img = Image.open(file)
 
-    img.thumbnail((612, 816))
-    newImage = Image.new("RGBA", size=(918, 816), color=(255,255,255))
-    newImage.paste(img, (0, 0, 612, 816))
+    img.thumbnail((finalWidth, 816))
+    newImage = Image.new("RGBA", size=(int(finalWidth * 1.5), 816), color=(255,255,255))
+    newImage.paste(img, (0, 0, finalWidth, 816))
     newImage.paste(logo, (624, 520, 909, 805))
     draw = ImageDraw.Draw(newImage)
 
@@ -93,18 +104,18 @@ def processImage(file, style, size, folder):
     draw.text((30, 758), "LuLaRoe Stacy Leasure-Broski", color, font=font)
 
     # Style
-    draw.rectangle([(612, 0), (918, 130)], fill=color)
+    draw.rectangle([(finalWidth, 0), (int(finalWidth * 1.5), 130)], fill=color)
     msg = formatStyle(style)
     font = ImageFont.truetype("steelfish rg.ttf", 100)
-    draw.text((centerText(draw.textsize(msg, font=font)), 2), msg, (255, 255, 255), font=font)
+    draw.text((centerText(draw, msg, font), 2), msg, (255, 255, 255), font=font)
 
     # Size
-    draw.text((centerText(draw.textsize(size.upper(), font=font)), 150), size.upper(), color, font=font)
+    draw.text((centerText(draw, size.upper(), font), 150), size.upper(), color, font=font)
 
     # Price
     font = ImageFont.truetype("steelfish rg.ttf", 100)
     msg = "$" + str(styleData[style]['price'])
-    draw.text((centerText(draw.textsize(msg, font=font)), 275), msg, color, font=font)
+    draw.text((centerText(draw, msg, font), 275), msg, color, font=font)
 
     # Save image
     while os.path.exists(folder + filePath(style, size, photo_increment)):
@@ -112,23 +123,19 @@ def processImage(file, style, size, folder):
 
     newImage.save(folder + filePath(style, size, photo_increment))
     os.remove(file)
+
     global running_total
     running_total += 1
 
-def processFolder(folder, style, size):
+def processFolder(folder):
     for fn in os.listdir(folder):
         if os.path.isfile(folder + fn) and os.path.splitext(fn)[1] == '.jpg':
             print('processing ' + folder)
-            processImage(folder + fn, style, size, folder)
+            processImage(folder + fn, folder)
         elif os.path.isdir(folder + fn):
-            if style == '':
-                style = fn
-            else:
-                size = fn
-
-            processFolder(folder + fn + '/', style, size)
+            processFolder(folder + fn + '/')
 
 if __name__ == "__main__":
     print('Lularizing folder: ' + folder)
-    processFolder(folder, '', '')
+    processFolder(folder)
     print('Lularized ' + str(running_total) + ' photos.')
