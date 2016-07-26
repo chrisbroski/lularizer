@@ -44,7 +44,8 @@ styleData = {
     'cassie': {'price': 35, 'sizes': ['xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
     'azure': {'price': 35, 'sizes': ['xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
     'ana': {'price': 60, 'sizes': ['xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
-    'amelia': {'price': 65, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl']}
+    'amelia': {'price': 65, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl']},
+    'carly': {'price': 55, 'sizes': ['xs', 's', 'm']}
 }
 
 # Globals
@@ -67,7 +68,6 @@ def filePath(style, size, i):
 
 def getStyleSize(fn):
     aPath = fn.split('/')
-    print(aPath)
     size = aPath[len(aPath) - 2]
     style = aPath[len(aPath) - 3]
     return [style, size]
@@ -88,8 +88,6 @@ def processImage(file, folder):
     info = getStyleSize(file)
     style = info[0]
     size = info[1]
-
-    print(size)
 
     if isLularizedName(file, style, size):
         return
