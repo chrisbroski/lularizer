@@ -52,6 +52,15 @@ styleData = {
 color = colors[random.randrange(0, len(colors) - 1)]
 running_total = 0
 folder = sys.argv[1] + '/'
+if len(sys.argv) > 2:
+    detail = True
+    if len(sys.argv) > 3:
+        detailLocation = (sys.argv[2], sys.argv[3])
+    else:
+        detailLocation = False
+else:
+    detail = 'logo'
+
 logo = Image.open('logo.jpg')
 finalWidth = 612
 
@@ -83,6 +92,12 @@ def isLularizedName(fn, style, size):
         return True
     return False
 
+def centerLocation(s):
+    selectionSize = 285
+    xLoc = int((s[0] / 2) - (selectionSize / 2))
+    yLoc = int((s[1] / 2) - (selectionSize / 2))
+    return (xLoc, yLoc, xLoc + selectionSize, yLoc + selectionSize)
+
 def processImage(file, folder):
     photo_increment = 1
     info = getStyleSize(file)
@@ -94,10 +109,19 @@ def processImage(file, folder):
 
     img = Image.open(file)
 
+    # add close-up
+    if detail == 'logo':
+        closeup = logo
+    else:
+        # use detail params for location. Default (50, 50)
+        imgCloseup = Image.open(file)
+        closeup = imgCloseup.crop(centerLocation(imgCloseup.size))
+
+
     img.thumbnail((finalWidth, 816))
     newImage = Image.new("RGBA", size=(int(finalWidth * 1.5), 816), color=(255,255,255))
     newImage.paste(img, (0, 0, finalWidth, 816))
-    newImage.paste(logo, (624, 520, 909, 805))
+    newImage.paste(closeup, (624, 520, 909, 805))
     draw = ImageDraw.Draw(newImage)
 
     font = ImageFont.truetype("MavenProLight-300.otf", 42)
