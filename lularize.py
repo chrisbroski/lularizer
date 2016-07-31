@@ -1,7 +1,6 @@
-import sys
-import os
+import sys, os, random
+import argparse
 from PIL import Image, ImageFont, ImageDraw
-import random
 
 colors = [
     (254, 209, 65),
@@ -51,15 +50,6 @@ styleData = {
 # Globals
 color = colors[random.randrange(0, len(colors) - 1)]
 running_total = 0
-folder = sys.argv[1] + '/'
-if len(sys.argv) > 2:
-    detail = True
-    if len(sys.argv) > 3:
-        detailLocation = (sys.argv[2], sys.argv[3])
-    else:
-        detailLocation = False
-else:
-    detail = 'logo'
 
 logo = Image.open('logo.jpg')
 finalWidth = 612
@@ -92,31 +82,29 @@ def isLularizedName(fn, style, size):
         return True
     return False
 
-def centerLocation(s):
+def centerLocation(size, center):
     selectionSize = 285
-    xLoc = int((s[0] / 2) - (selectionSize / 2))
-    yLoc = int((s[1] / 2) - (selectionSize / 2))
+    xLoc = int((size[0] * center[0] / 100) - (selectionSize / 2))
+    yLoc = int((size[1] * center[1] / 100) - (selectionSize / 2))
     return (xLoc, yLoc, xLoc + selectionSize, yLoc + selectionSize)
 
-def processImage(file, folder):
+def processImage(file, folder, style, size, watermark, detail, exportPath, deleteSource):
     photo_increment = 1
-    info = getStyleSize(file)
-    style = info[0]
-    size = info[1]
 
     if isLularizedName(file, style, size):
         return
 
     img = Image.open(file)
 
-    # add close-up
-    if detail == 'logo':
+    # add LuLaRoe logo or close-up
+    if not detail:
         closeup = logo
     else:
-        # use detail params for location. Default (50, 50)
         imgCloseup = Image.open(file)
-        closeup = imgCloseup.crop(centerLocation(imgCloseup.size))
+        closeup = imgCloseup.crop(centerLocation(imgCloseup.size, detail))
 
+    if not exportPath:
+        exportPath = folder
 
     img.thumbnail((finalWidth, 816))
     newImage = Image.new("RGBA", size=(int(finalWidth * 1.5), 816), color=(255,255,255))
@@ -124,43 +112,95 @@ def processImage(file, folder):
     newImage.paste(closeup, (624, 520, 909, 805))
     draw = ImageDraw.Draw(newImage)
 
-    font = ImageFont.truetype("MavenProLight-300.otf", 42)
-    draw.text((32, 760), "LuLaRoe Stacy Leasure-Broski", (0, 0, 0), font=font)
-    draw.text((30, 758), "LuLaRoe Stacy Leasure-Broski", color, font=font)
+    if watermark != '':
+        # TODO: cetner text
+        # Official font is Maven Pro Light but regular is extremely close
+        font = ImageFont.truetype("MavenPro-Regular.ttf", 40)
+        draw.text((32, 760), watermark, (0, 0, 0), font=font)
+        draw.text((30, 758), watermark, color, font=font)
 
     # Style
     draw.rectangle([(finalWidth, 0), (int(finalWidth * 1.5), 130)], fill=color)
     msg = formatStyle(style)
-    font = ImageFont.truetype("steelfish rg.ttf", 80)
+    # Sturkopf Grotesk is the closest free font I have found to Steelfish
+    font = ImageFont.truetype("Sturkopf.ttf", 80)
     draw.text((centerText(draw, msg, font), 15), msg, (255, 255, 255), font=font)
 
     # Size
+    font = ImageFont.truetype("Sturkopf.ttf", 100)
     draw.text((centerText(draw, size.upper(), font), 150), size.upper(), color, font=font)
 
     # Price
-    font = ImageFont.truetype("steelfish rg.ttf", 100)
     msg = "$" + str(styleData[style]['price'])
     draw.text((centerText(draw, msg, font), 275), msg, color, font=font)
 
     # Save image
-    while os.path.exists(folder + filePath(style, size, photo_increment)):
+    while os.path.exists(exportPath + filePath(style, size, photo_increment)):
         photo_increment += 1
 
-    newImage.save(folder + filePath(style, size, photo_increment))
-    os.remove(file)
+    newImage.save(exportPath + filePath(style, size, photo_increment))
+
+    if deleteSource:
+        os.remove(file)
 
     global running_total
     running_total += 1
 
-def processFolder(folder):
+def getFinalDir(folder):
+    folder = folder[:-1]
+    return folder[folder.rfind('/') + 1:]
+
+def processSize(folder, style, watermark, detail, exportPath, deleteSource):
+    size = getFinalDir(folder)
+
     for fn in os.listdir(folder):
         if os.path.isfile(folder + fn) and os.path.splitext(fn)[1] == '.jpg':
             print('processing ' + folder)
-            processImage(folder + fn, folder)
+            processImage(folder + fn, folder, style, size, watermark, detail, exportPath, deleteSource)
+
+def processStyle(folder, watermark, detail, exportPath, deleteSource):
+    style = getFinalDir(folder)
+
+    for fn in os.listdir(folder):
+        if os.path.isfile(folder + fn) and os.path.splitext(fn)[1] == '.jpg':
+            print('processing ' + folder)
+            processImage(folder + fn, folder, style, '', watermark, detail, exportPath, deleteSource)
         elif os.path.isdir(folder + fn):
-            processFolder(folder + fn + '/')
+            processSize(folder + fn + '/', style, watermark, detail, exportPath, deleteSource)
+
+def processFolder(folder, watermark, detail, exportPath, deleteSource):
+    for fn in os.listdir(folder):
+        if os.path.isdir(folder + fn):
+            processStyle(folder + fn + '/', watermark, detail, exportPath, deleteSource)
 
 if __name__ == "__main__":
-    print('Lularizing folder: ' + folder)
-    processFolder(folder)
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Add style, size, and price information to LuLaRoe clothing photos.')
+    parser.add_argument('source', help='Parent directory of photos')
+    parser.add_argument('--watermark', '-w', default='', help='Message embossed over bottom of photo')
+    parser.add_argument('--export', '-e', default='', help='Directory path ')
+    parser.add_argument('--detail', '-d', nargs=2, type=float, help='Use a close-up centered at this %% x, y position instead of logo')
+    parser.add_argument('--remove', '-r', action='store_true', help='Delete source photo once processed')
+
+    args = parser.parse_args()
+
+    if args.detail is None:
+        detail = False
+    else:
+        if len(args.detail) == 0:
+            detail = [50.0, 50.0]
+        elif len(args.detail) == 1:
+            detail = [args.detail[0], 50.0]
+        else:
+            detail = [args.detail[0], args.detail[1]]
+
+    if args.export:
+        exportPath = args.export
+        if exportPath[-1] != '/':
+            exportPath = exportPath + '/'
+    else:
+        exportPath = False
+
+    print('Lularizing folder: ' + args.source)
+    processFolder(args.source + '/', args.watermark, detail, exportPath, args.remove)
     print('Lularized ' + str(running_total) + ' photos.')
