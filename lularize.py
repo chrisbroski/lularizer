@@ -58,18 +58,12 @@ def formatStyle(styleType):
     styleType = styleType.replace('_', ' ')
     return styleType.upper()
 
-def centerText(draw, msg, font):
-    w, h = draw.textsize(msg.upper(), font=font)
-    return finalWidth + ((finalWidth / 2) - w) / 2
+def centerText(draw, msg, font, width):
+    w, h = draw.textsize(msg, font=font)
+    return (width / 2) - (w / 2)
 
-def filePath(style, size, i):
+def lularizedName(style, size, i):
     return style + "_" + size + "_" + str(i) + '.jpg'
-
-def getStyleSize(fn):
-    aPath = fn.split('/')
-    size = aPath[len(aPath) - 2]
-    style = aPath[len(aPath) - 3]
-    return [style, size]
 
 def isLularizedName(fn, style, size):
     fileName = os.path.basename(fn)
@@ -113,32 +107,34 @@ def processImage(file, folder, style, size, watermark, detail, exportPath, delet
     draw = ImageDraw.Draw(newImage)
 
     if watermark != '':
-        # TODO: cetner text
         # Official font is Maven Pro Light but regular is extremely close
         font = ImageFont.truetype("MavenPro-Regular.ttf", 40)
-        draw.text((32, 760), watermark, (0, 0, 0), font=font)
-        draw.text((30, 758), watermark, color, font=font)
+        xWatermark = centerText(draw, watermark, font, finalWidth)
+        draw.text((xWatermark + 2, 760), watermark, (0, 0, 0), font=font)
+        draw.text((xWatermark, 758), watermark, color, font=font)
 
     # Style
     draw.rectangle([(finalWidth, 0), (int(finalWidth * 1.5), 130)], fill=color)
     msg = formatStyle(style)
     # Sturkopf Grotesk is the closest free font I have found to Steelfish
     font = ImageFont.truetype("Sturkopf.ttf", 80)
-    draw.text((centerText(draw, msg, font), 15), msg, (255, 255, 255), font=font)
+    msg = msg.upper()
+    draw.text((finalWidth + centerText(draw, msg, font, int(finalWidth * 0.5)), 15), msg, (255, 255, 255), font=font)
 
     # Size
     font = ImageFont.truetype("Sturkopf.ttf", 100)
-    draw.text((centerText(draw, size.upper(), font), 150), size.upper(), color, font=font)
+    msg = msg.upper()
+    draw.text((finalWidth + centerText(draw, size.upper(), font, int(finalWidth * 0.5)), 150), size.upper(), color, font=font)
 
     # Price
     msg = "$" + str(styleData[style]['price'])
-    draw.text((centerText(draw, msg, font), 275), msg, color, font=font)
+    draw.text((finalWidth + centerText(draw, msg, font, int(finalWidth * 0.5)), 275), msg, color, font=font)
 
     # Save image
-    while os.path.exists(exportPath + filePath(style, size, photo_increment)):
+    while os.path.exists(exportPath + lularizedName(style, size, photo_increment)):
         photo_increment += 1
 
-    newImage.save(exportPath + filePath(style, size, photo_increment))
+    newImage.save(exportPath + lularizedName(style, size, photo_increment))
 
     if deleteSource:
         os.remove(file)
@@ -178,7 +174,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Add style, size, and price information to LuLaRoe clothing photos.')
     parser.add_argument('source', help='Parent directory of photos')
     parser.add_argument('--watermark', '-w', default='', help='Message embossed over bottom of photo')
-    parser.add_argument('--export', '-e', default='', help='Directory path ')
+    parser.add_argument('--export', '-e', default='', help='Directory path where processed photos will be saved')
     parser.add_argument('--detail', '-d', nargs=2, type=float, help='Use a close-up centered at this %% x, y position instead of logo')
     parser.add_argument('--remove', '-r', action='store_true', help='Delete source photo once processed')
 
