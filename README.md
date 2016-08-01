@@ -1,8 +1,8 @@
 # LuLaRizer
 
-This Python script adds style, size, and price to clothing photos.
+Python script to add style, size, and price to clothing photos.
 
-I was going to make this repository private but was surprised to find a few people were already following. I assume you are LuLaRoe husbands as well, so I consider you my brothers. In the spirit of shared adversity, I have added some reasonable command line arguments and this quick introduction.
+I was going to make this repository private but was surprised to find a few people were already following. I assume you are LuLaRoe husbands, so I consider you my brothers. In the spirit of shared adversity, I have added some reasonable command line arguments and this quick introduction.
 
 ## System Requirements
 
