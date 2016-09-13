@@ -48,7 +48,6 @@ styleData = {
 }
 
 # Globals
-color = colors[random.randrange(0, len(colors) - 1)]
 running_total = 0
 
 logo = Image.open('logo.jpg')
@@ -82,7 +81,7 @@ def centerLocation(size, center):
     yLoc = int((size[1] * center[1] / 100) - (selectionSize / 2))
     return (xLoc, yLoc, xLoc + selectionSize, yLoc + selectionSize)
 
-def processImage(file, folder, style, size, watermark, detail, exportPath, deleteSource):
+def processImage(file, folder, style, size, watermark, color, detail, exportPath, deleteSource):
     photo_increment = 1
 
     if isLularizedName(file, style, size):
@@ -108,7 +107,10 @@ def processImage(file, folder, style, size, watermark, detail, exportPath, delet
 
     if watermark != '':
         # Official font is Maven Pro Light but regular is extremely close
-        font = ImageFont.truetype("MavenPro-Regular.ttf", 40)
+        if os.path.isfile("MavenProLight-300.otf"):
+            font = ImageFont.truetype("MavenProLight-300.otf", 40)
+        else:
+            font = ImageFont.truetype("MavenPro-Regular.ttf", 40)
         xWatermark = centerText(draw, watermark, font, finalWidth)
         draw.text((xWatermark + 2, 760), watermark, (0, 0, 0), font=font)
         draw.text((xWatermark, 758), watermark, color, font=font)
@@ -116,13 +118,19 @@ def processImage(file, folder, style, size, watermark, detail, exportPath, delet
     # Style
     draw.rectangle([(finalWidth, 0), (int(finalWidth * 1.5), 130)], fill=color)
     msg = formatStyle(style)
-    # Sturkopf Grotesk is the closest free font I have found to Steelfish
-    font = ImageFont.truetype("Sturkopf.ttf", 80)
+    if os.path.isfile("steelfish rg.ttf"):
+        font = ImageFont.truetype("steelfish rg.ttf", 80)
+    else:
+        # Sturkopf Grotesk is the closest free font I have found to Steelfish
+        font = ImageFont.truetype("Sturkopf.ttf", 80)
     msg = msg.upper()
     draw.text((finalWidth + centerText(draw, msg, font, int(finalWidth * 0.5)), 15), msg, (255, 255, 255), font=font)
 
     # Size
-    font = ImageFont.truetype("Sturkopf.ttf", 100)
+    if os.path.isfile("steelfish rg.ttf"):
+        font = ImageFont.truetype("steelfish rg.ttf", 80)
+    else:
+        font = ImageFont.truetype("Sturkopf.ttf", 100)
     msg = msg.upper()
     draw.text((finalWidth + centerText(draw, size.upper(), font, int(finalWidth * 0.5)), 150), size.upper(), color, font=font)
 
@@ -146,39 +154,43 @@ def getFinalDir(folder):
     folder = folder[:-1]
     return folder[folder.rfind('/') + 1:]
 
-def processSize(folder, style, watermark, detail, exportPath, deleteSource):
+def processSize(folder, style, watermark, color, detail, exportPath, deleteSource):
     size = getFinalDir(folder)
 
     for fn in os.listdir(folder):
         if os.path.isfile(folder + fn) and os.path.splitext(fn)[1] == '.jpg':
             print('processing ' + folder)
-            processImage(folder + fn, folder, style, size, watermark, detail, exportPath, deleteSource)
+            processImage(folder + fn, folder, style, size, watermark, color, detail, exportPath, deleteSource)
 
-def processStyle(folder, watermark, detail, exportPath, deleteSource):
+def processStyle(folder, watermark, color, detail, exportPath, deleteSource):
     style = getFinalDir(folder)
 
     for fn in os.listdir(folder):
         if os.path.isfile(folder + fn) and os.path.splitext(fn)[1] == '.jpg':
             print('processing ' + folder)
-            processImage(folder + fn, folder, style, '', watermark, detail, exportPath, deleteSource)
+            processImage(folder + fn, folder, style, '', watermark, color, detail, exportPath, deleteSource)
         elif os.path.isdir(folder + fn):
-            processSize(folder + fn + '/', style, watermark, detail, exportPath, deleteSource)
+            processSize(folder + fn + '/', style, watermark, color, detail, exportPath, deleteSource)
 
-def processFolder(folder, watermark, detail, exportPath, deleteSource):
+def processFolder(folder, watermark, color, detail, exportPath, deleteSource):
     for fn in os.listdir(folder):
         if os.path.isdir(folder + fn):
-            processStyle(folder + fn + '/', watermark, detail, exportPath, deleteSource)
+            processStyle(folder + fn + '/', watermark, color, detail, exportPath, deleteSource)
 
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Add style, size, and price information to LuLaRoe clothing photos.')
     parser.add_argument('source', help='Parent directory of photos')
     parser.add_argument('--watermark', '-w', default='', help='Message embossed over bottom of photo')
+    parser.add_argument('--color', '-c', default='', help='RGB color of text')
     parser.add_argument('--export', '-e', default='', help='Directory path where processed photos will be saved')
     parser.add_argument('--detail', '-d', nargs=2, type=float, help='Use a close-up centered at this %% x, y position instead of logo')
     parser.add_argument('--remove', '-r', action='store_true', help='Delete source photo once processed')
 
     args = parser.parse_args()
+
+    if args.color is None:
+        color = colors[random.randrange(0, len(colors) - 1)]
 
     if args.detail is None:
         detail = False
@@ -198,5 +210,5 @@ if __name__ == "__main__":
         exportPath = False
 
     print('Lularizing folder: ' + args.source)
-    processFolder(args.source + '/', args.watermark, detail, exportPath, args.remove)
+    processFolder(args.source + '/', args.watermark, color, detail, exportPath, args.remove)
     print('Lularized ' + str(running_total) + ' photos.')
