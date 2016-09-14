@@ -182,7 +182,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Add style, size, and price information to LuLaRoe clothing photos.')
     parser.add_argument('source', help='Parent directory of photos')
     parser.add_argument('--watermark', '-w', default='', help='Message embossed over bottom of photo')
-    parser.add_argument('--color', '-c', default='', help='RGB color of text')
+    parser.add_argument('--color', '-c', default='', help='RGB color of text e.g. (246, 117, 153)')
     parser.add_argument('--export', '-e', default='', help='Directory path where processed photos will be saved')
     parser.add_argument('--detail', '-d', nargs=2, type=float, help='Use a close-up centered at this %% x, y position instead of logo')
     parser.add_argument('--remove', '-r', action='store_true', help='Delete source photo once processed')
