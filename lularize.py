@@ -117,7 +117,7 @@ def processImage(file, folder, style, size, watermark, color, detail, exportPath
 
     # Style
     draw.rectangle([(finalWidth, 0), (int(finalWidth * 1.5), 130)], fill=color)
-    msg = formatStyle(style)
+    msg = formatStyle(style.replace(':', '/'))
     if os.path.isfile("steelfish rg.ttf"):
         font = ImageFont.truetype("steelfish rg.ttf", 80)
     else:
@@ -135,8 +135,9 @@ def processImage(file, folder, style, size, watermark, color, detail, exportPath
     draw.text((finalWidth + centerText(draw, size.upper(), font, int(finalWidth * 0.5)), 150), size.upper(), color, font=font)
 
     # Price
-    msg = "$" + str(styleData[style]['price'])
+    msg = "$" + str(styleData[style.replace(':', '/')]['price'])
     draw.text((finalWidth + centerText(draw, msg, font, int(finalWidth * 0.5)), 275), msg, color, font=font)
+
 
     # Save image
     while os.path.exists(exportPath + lularizedName(style, size, photo_increment)):
@@ -182,7 +183,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Add style, size, and price information to LuLaRoe clothing photos.')
     parser.add_argument('source', help='Parent directory of photos')
     parser.add_argument('--watermark', '-w', default='', help='Message embossed over bottom of photo')
-    parser.add_argument('--color', '-c', default='', help='RGB color of text e.g. (246, 117, 153)')
+    parser.add_argument('--color', '-c', help='RGB color of text e.g. (246, 117, 153)')
     parser.add_argument('--export', '-e', default='', help='Directory path where processed photos will be saved')
     parser.add_argument('--detail', '-d', nargs=2, type=float, help='Use a close-up centered at this %% x, y position instead of logo')
     parser.add_argument('--remove', '-r', action='store_true', help='Delete source photo once processed')
@@ -191,6 +192,8 @@ if __name__ == "__main__":
 
     if args.color is None:
         color = colors[random.randrange(0, len(colors) - 1)]
+    else:
+        color = args.color
 
     if args.detail is None:
         detail = False
