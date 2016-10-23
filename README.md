@@ -94,3 +94,8 @@ And you'll get something like this:
                             Use a close-up centered at this % x, y position
                             instead of logo
       --remove, -r          Delete source photo once processed
+      --upload, -u          Create symlinks in an upload folder by style only
+
+### Upload Argument
+
+This new feature was implemented because after everything is processed, the photos are in separate folders by size. This makes it inconvenient when uploading files by style. If the `-u` flag is present, a folder called *upload* is created in the export path. A style folder is created inside the upload folder only if at least one photo of that style exists. Then, a symlink for all photos of that style is created in that folder, without size folders.

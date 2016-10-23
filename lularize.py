@@ -178,8 +178,12 @@ def processFolder(folder, watermark, color, detail, exportPath, deleteSource):
         if os.path.isdir(folder + fn) and fn != "upload":
             processStyle(folder + fn + '/', watermark, color, detail, exportPath, deleteSource)
 
-def copyToUploadDirectory(folder):
-    uploadFolder = folder + "/upload"
+def copyToUploadDirectory(folder, exportPath):
+    if exportPath:
+        uploadFolder = exportPath + "/upload"
+    else:
+        uploadFolder = folder + "/upload"
+
 
     if os.path.exists(uploadFolder):
         shutil.rmtree(uploadFolder)
@@ -210,7 +214,7 @@ if __name__ == "__main__":
     parser.add_argument('--export', '-e', default='', help='Directory path where processed photos will be saved')
     parser.add_argument('--detail', '-d', nargs=2, type=float, help='Use a close-up centered at this %% x, y position instead of logo')
     parser.add_argument('--remove', '-r', action='store_true', help='Delete source photo once processed')
-    parser.add_argument('--upload', '-u', action='store_true', help='Create symlinks in an upload folder by style only.')
+    parser.add_argument('--upload', '-u', action='store_true', help='Create symlinks in an upload folder by style only')
 
     args = parser.parse_args()
 
@@ -243,4 +247,4 @@ if __name__ == "__main__":
     # if upload flag:
     if args.upload:
         print("Creating symlinks in upload directory.")
-        copyToUploadDirectory(args.source)
+        copyToUploadDirectory(args.source, exportPath)
