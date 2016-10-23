@@ -1,4 +1,4 @@
-import sys, os, random
+import sys, os, random, shutil
 import argparse
 from PIL import Image, ImageFont, ImageDraw
 
@@ -175,8 +175,31 @@ def processStyle(folder, watermark, color, detail, exportPath, deleteSource):
 
 def processFolder(folder, watermark, color, detail, exportPath, deleteSource):
     for fn in os.listdir(folder):
-        if os.path.isdir(folder + fn):
+        if os.path.isdir(folder + fn) and fn != "upload":
             processStyle(folder + fn + '/', watermark, color, detail, exportPath, deleteSource)
+
+def copyToUploadDirectory(folder):
+    uploadFolder = folder + "/upload"
+
+    if os.path.exists(uploadFolder):
+        shutil.rmtree(uploadFolder)
+
+    os.makedirs(uploadFolder)
+
+    for styleFolder in os.listdir(folder):
+        fullStylePath = folder + "/" + styleFolder
+        if os.path.isdir(fullStylePath):
+            for sizeFolder in os.listdir(fullStylePath):
+                fullSizePath = folder + "/" + styleFolder + "/" + sizeFolder
+                if os.path.isdir(fullSizePath) and styleFolder != "upload":
+                    for sizeFile in os.listdir(fullSizePath):
+                        if (os.path.splitext(sizeFile)[1] == ".jpg"):
+                            if not os.path.exists(uploadFolder + "/" + styleFolder):
+                                os.makedirs(uploadFolder + "/" + styleFolder)
+
+                            src = fullSizePath + "/" + sizeFile
+                            symlink = uploadFolder + "/" + styleFolder + "/" + sizeFile
+                            os.symlink(src, symlink)
 
 if __name__ == "__main__":
     # Parse command line arguments
@@ -187,6 +210,7 @@ if __name__ == "__main__":
     parser.add_argument('--export', '-e', default='', help='Directory path where processed photos will be saved')
     parser.add_argument('--detail', '-d', nargs=2, type=float, help='Use a close-up centered at this %% x, y position instead of logo')
     parser.add_argument('--remove', '-r', action='store_true', help='Delete source photo once processed')
+    parser.add_argument('--upload', '-u', action='store_true', help='Create symlinks in an upload folder by style only.')
 
     args = parser.parse_args()
 
@@ -215,3 +239,8 @@ if __name__ == "__main__":
     print('Lularizing folder: ' + args.source)
     processFolder(args.source + '/', args.watermark, color, detail, exportPath, args.remove)
     print('Lularized ' + str(running_total) + ' photos.')
+
+    # if upload flag:
+    if args.upload:
+        print("Creating symlinks in upload directory.")
+        copyToUploadDirectory(args.source)
