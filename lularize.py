@@ -27,6 +27,7 @@ styleData = {
     'monroe': {'price': 48, 'sizes': ['s', 'l']},
     'maxi': {'price': 42, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
     'madison': {'price': 48, 'sizes': ['xs', 's', 'm', 'l', 'xl', '2xl', '3xl']},
+    'mimi': {'price': 75},
     'kids_l/xl': {'price': 23},
     'lucy': {'price': 52, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl']},
     'lola': {'price': 48, 'sizes': ['xxs', 'xs', 's', 'm', 'l', 'xl', '2xl']},
@@ -202,7 +203,15 @@ def copyToUploadDirectory(folder, exportPath):
                                 os.makedirs(uploadFolder + "/" + styleFolder)
 
                             src = fullSizePath + "/" + sizeFile
-                            symlink = uploadFolder + "/" + styleFolder + "/" + sizeFile
+                            pf = sizeFile.split("_")
+
+                            if "sizes" in styleData[styleFolder.replace(':', '/')]:
+                                orderNum = str(styleData[styleFolder.replace(':', '/')]["sizes"].index(sizeFolder))
+                                linkName = styleFolder + "_" + orderNum + sizeFolder + "_" + pf[len(pf) - 1]
+                            else:
+                                linkName = styleFolder + "_" + pf[len(pf) - 1]
+
+                            symlink = uploadFolder + "/" + styleFolder + "/" + linkName
                             os.symlink(src, symlink)
 
 if __name__ == "__main__":
