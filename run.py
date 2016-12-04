@@ -18,3 +18,4 @@ if top_pos == '':
 detail = [int(left_pos), int(top_pos)]
 
 lularize.processFolder(source, watermark, (246, 117, 153), detail, False, True)
+lularize.copyToUploadDirectory(source, "")

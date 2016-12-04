@@ -100,10 +100,13 @@ def processImage(file, folder, style, size, watermark, color, detail, exportPath
     if not exportPath:
         exportPath = folder
 
-    img.thumbnail((finalWidth, 816))
-    newImage = Image.new("RGBA", size=(int(finalWidth * 1.5), 816), color=(255,255,255))
-    newImage.paste(img, (0, 0, finalWidth, 816))
-    newImage.paste(closeup, (624, 520, 909, 805))
+    imgDimensions = img.size
+    finalHeight = int(finalWidth / imgDimensions[0] * imgDimensions[1])
+
+    img.thumbnail((finalWidth, finalHeight))
+    newImage = Image.new("RGBA", size=(int(finalWidth * 1.5), finalHeight), color=(255,255,255))
+    newImage.paste(img, (0, 0, finalWidth, finalHeight))
+    newImage.paste(closeup, (624, finalHeight - 11 - 285, 909, finalHeight - 11))
     draw = ImageDraw.Draw(newImage)
 
     if watermark != '':
@@ -113,8 +116,8 @@ def processImage(file, folder, style, size, watermark, color, detail, exportPath
         else:
             font = ImageFont.truetype("MavenPro-Regular.ttf", 40)
         xWatermark = centerText(draw, watermark, font, finalWidth)
-        draw.text((xWatermark + 2, 760), watermark, (0, 0, 0), font=font)
-        draw.text((xWatermark, 758), watermark, color, font=font)
+        draw.text((xWatermark + 2, finalHeight - 60), watermark, (0, 0, 0), font=font)
+        draw.text((xWatermark, finalHeight - 58), watermark, color, font=font)
 
     # Style
     draw.rectangle([(finalWidth, 0), (int(finalWidth * 1.5), 130)], fill=color)
