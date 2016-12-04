@@ -76,8 +76,7 @@ def isLularizedName(fn, style, size):
         return True
     return False
 
-def centerLocation(size, center):
-    selectionSize = 285
+def centerLocation(size, center, selectionSize):
     xLoc = int((size[0] * center[0] / 100) - (selectionSize / 2))
     yLoc = int((size[1] * center[1] / 100) - (selectionSize / 2))
     return (xLoc, yLoc, xLoc + selectionSize, yLoc + selectionSize)
@@ -90,17 +89,21 @@ def processImage(file, folder, style, size, watermark, color, detail, exportPath
 
     img = Image.open(file)
 
-    # add LuLaRoe logo or close-up
-    if not detail:
-        closeup = logo
-    else:
-        imgCloseup = Image.open(file)
-        closeup = imgCloseup.crop(centerLocation(imgCloseup.size, detail))
-
     if not exportPath:
         exportPath = folder
 
     imgDimensions = img.size
+    if imgDimensions[0] > imgDimensions[1]:
+        img = img.transpose(Image.ROTATE_270)
+        imgDimensions = img.size
+
+    # add LuLaRoe logo or close-up
+    if not detail:
+        closeup = logo
+    else:
+        closeup = img.crop(centerLocation(img.size, detail, int(float(imgDimensions[0]) / 3.3)))
+        closeup = closeup.resize((285, 285))
+
     finalHeight = int(float(finalWidth) * float(imgDimensions[1]) / float(imgDimensions[0]))
 
     img.thumbnail((finalWidth, finalHeight))
