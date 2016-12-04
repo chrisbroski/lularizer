@@ -101,7 +101,7 @@ def processImage(file, folder, style, size, watermark, color, detail, exportPath
         exportPath = folder
 
     imgDimensions = img.size
-    finalHeight = int(finalWidth / imgDimensions[0] * imgDimensions[1])
+    finalHeight = int(float(finalWidth) * float(imgDimensions[1]) / float(imgDimensions[0]))
 
     img.thumbnail((finalWidth, finalHeight))
     newImage = Image.new("RGBA", size=(int(finalWidth * 1.5), finalHeight), color=(255,255,255))
